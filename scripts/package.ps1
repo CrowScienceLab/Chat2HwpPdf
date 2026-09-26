@@ -25,7 +25,7 @@ Compress-Archive -Path (Join-Path $extension '*') -DestinationPath (Join-Path $d
 $sourceFiles = @('manifest.json','background.js','popup','content','styles','icons','setup','scripts','tests','package.json','package-lock.json','README.md','THIRD_PARTY_NOTICES.md','.gitignore')
 foreach ($relative in $sourceFiles) { Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $source -Recurse }
 New-Item -ItemType Directory -Force -Path (Join-Path $source 'docs'),(Join-Path $source 'native-host\security') | Out-Null
-foreach ($doc in @('index.md','_config.yml','privacy.md','release-readiness.md','store-listing.ko.md','hwp-editable-equations.md')) {
+foreach ($doc in @('index.md','index.html','privacy.md','privacy.html','release-readiness.md','store-listing.ko.md','hwp-editable-equations.md')) {
   Copy-Item -LiteralPath (Join-Path $projectRoot "docs\$doc") -Destination (Join-Path $source 'docs')
 }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'native-host\src') -Destination (Join-Path $source 'native-host') -Recurse
@@ -34,7 +34,7 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'native-host\security\README.md')
 Compress-Archive -Path (Join-Path $source '*') -DestinationPath (Join-Path $dist "Chat2HwpPdf-Source-$version.zip")
 Copy-Item -LiteralPath (Join-Path $projectRoot 'native-host\bin\Chat2HwpPdf-Setup.exe') -Destination $dist
 New-Item -ItemType Directory -Force -Path (Join-Path $dist 'docs') | Out-Null
-foreach ($relative in @('README.md','THIRD_PARTY_NOTICES.md','docs\index.md','docs\_config.yml','docs\privacy.md','docs\release-readiness.md','docs\store-listing.ko.md','docs\hwp-editable-equations.md')) { Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination (Join-Path $dist $relative) }
+foreach ($relative in @('README.md','THIRD_PARTY_NOTICES.md','docs\index.md','docs\index.html','docs\privacy.md','docs\privacy.html','docs\release-readiness.md','docs\store-listing.ko.md','docs\hwp-editable-equations.md')) { Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination (Join-Path $dist $relative) }
 $hashes = Get-ChildItem -LiteralPath $dist -File -Recurse | Sort-Object FullName | ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.FullName.Substring($dist.Length + 1).Replace('\','/') }
 [IO.File]::WriteAllLines((Join-Path $dist 'SHA256SUMS.txt'), $hashes, (New-Object Text.UTF8Encoding($false)))
 Write-Output $dist
