@@ -16,7 +16,7 @@ HWPX에는 Windows 데스크톱 한글과 별도 도우미 설치가 필요합�
 
 Windows 도우미와 설치 안내: https://github.com/CrowScienceLab/Chat2HwpPdf/releases
 
-개인정보처리방침: https://crowsciencelab.github.io/Chat2HwpPdf/privacy
+개인정보처리방침: https://crowsciencelab.github.io/Chat2HwpPdf/privacy.html
 
 ## 심사자 안내
 
