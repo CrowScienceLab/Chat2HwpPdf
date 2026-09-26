@@ -1,6 +1,6 @@
 # 수식Chat to HWPX/PDF
 
-**AI Chat을 편집 가능한 Hwp와 Pdf로**
+**수식이 포함된 AI Chat을 편집 가능한 Hwp와 Pdf로 변환**
 
 Crow Science Lab. · Crow Ink · 0.4.4 공개 전 검증판
 
