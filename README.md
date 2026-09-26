@@ -60,6 +60,8 @@ vendor 명령은 Crow 아이콘 PNG를 생성합니다. 확장 실행에 외부 
 
 [개인정보처리방침](docs/privacy.md) · [편집 가능한 수식 안내](docs/hwp-editable-equations.md) · [타사 고지](THIRD_PARTY_NOTICES.md)
 
+다른 계정이나 PC에서 개발을 이어갈 때는 [개발 인계서](HANDOFF.md)를 먼저 확인하세요.
+
 ---
 
 # Formula Chat to HWPX/PDF
@@ -115,6 +117,7 @@ npm test
 - [Privacy Policy](docs/privacy.md)
 - [Third-party software and trademarks](THIRD_PARTY_NOTICES.md)
 - [Editable equation implementation](docs/hwp-editable-equations.md)
+- [Development handoff](HANDOFF.md)
 
 The extension does not use remotely hosted executable code. All extension JavaScript is included in the package. Formula Chat to HWPX/PDF is not an official Hancom product and is not affiliated with Hancom.
 

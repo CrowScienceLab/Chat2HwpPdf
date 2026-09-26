@@ -16,7 +16,7 @@ for (const permission of [...(manifest.permissions || []), ...(manifest.host_per
 function walk(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const full = path.join(directory, entry.name);
-    if (entry.isDirectory() && ['node_modules', 'vendor', 'tmp', 'dist', '.git'].includes(entry.name)) return [];
+    if (entry.isDirectory() && ['node_modules', 'vendor', 'tmp', 'dist', '.git', '_local-history'].includes(entry.name)) return [];
     return entry.isDirectory() ? walk(full) : [full];
   });
 }

@@ -1,6 +1,7 @@
 node_modules/
 dist/
 tmp/
+_local-history/
 vendor/
 native-host/bin/
 native-host/security/official/
