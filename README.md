@@ -4,6 +4,8 @@
 
 Crow Science Lab. · Crow Ink · 0.4.4 공개 전 검증판
 
+> **Chrome 웹스토어 심사 전 시험 배포:** GitHub의 확장 ZIP은 개발자 모드와 확장 ID를 이해하는 고급 사용자용입니다. 일반 사용자는 웹스토어 심사가 끝난 뒤 스토어 설치를 권장합니다. [한글·영문 수동 설치 안내](docs/advanced-install.md)
+
 ChatGPT·Gemini·Gemini Notebook(NotebookLM)·Claude의 대화를 PDF로 출력하거나 편집 가능한 한글 수식 개체가 포함된 HWPX로 변환합니다. 수식을 그림으로 대체하지 않습니다. 출력은 PDF와 HWPX이며 .hwp 출력은 제공하지 않습니다.
 
 0.4.3은 gg/ll 비교 기호를 지원하고, 변환할 수 없는 수식만 [수식 N 생략]으로 표시하여 나머지를 저장합니다. 완료 메시지에 생략 개수와 원인(최대 3건)을 표시합니다. 파일 저장·도우미 연결 오류까지 무시하지는 않습니다.
@@ -117,3 +119,5 @@ npm test
 The extension does not use remotely hosted executable code. All extension JavaScript is included in the package. Formula Chat to HWPX/PDF is not an official Hancom product and is not affiliated with Hancom.
 
 Developed by Crow Science Lab. · Crow Ink
+
+> **Pre-review test distribution:** The extension ZIP on GitHub is intended for advanced users familiar with Developer mode and extension IDs. General users should wait for the reviewed Chrome Web Store listing. See the [bilingual manual installation guide](docs/advanced-install.md).
