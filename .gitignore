@@ -1,0 +1,16 @@
+node_modules/
+dist/
+tmp/
+vendor/
+native-host/bin/
+native-host/security/official/
+native-host/security/official-automation.zip
+docs/*.hwpx
+docs/*-preview.png
+docs/phase-1-verification.md
+docs/release-readiness.md
+*.log
+*.pfx
+*.p12
+.env
+.env.*

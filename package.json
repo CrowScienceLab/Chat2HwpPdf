@@ -1,0 +1,14 @@
+{
+  "name": "crow-chat2hwp-pdf",
+  "version": "0.4.4",
+  "private": true,
+  "description": "수식Chat to HWPX/PDF — Crow Science Lab.",
+  "scripts": {
+    "test": "node tests/validate.mjs && node tests/hwp-equations.mjs && node tests/background-export.mjs && node tests/site-compatibility.mjs",
+    "vendor": "node scripts/vendor.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "jsdom": "26.1.0"
+  }
+}

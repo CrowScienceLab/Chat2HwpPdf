@@ -1,0 +1,130 @@
+@page {
+  size: __AICE_PAGE_SIZE__;
+  margin: __AICE_PAGE_MARGIN__;
+}
+
+#ai-chat-exporter-print-root { display: none; }
+
+@media print {
+  html.aice-printing,
+  html.aice-printing body {
+    overflow: visible !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    background: #fff !important;
+  }
+
+  html.aice-printing body > *:not(#ai-chat-exporter-print-root) {
+    display: none !important;
+  }
+
+  #ai-chat-exporter-print-root {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #17191f !important;
+    background: #fff !important;
+    font: 10.8pt/1.62 system-ui, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+    overflow: visible !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  #ai-chat-exporter-print-root *,
+  #ai-chat-exporter-print-root *::before,
+  #ai-chat-exporter-print-root *::after {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  #ai-chat-exporter-print-root .aice-document-header {
+    margin: 0 0 9mm;
+    padding-bottom: 4mm;
+    border-bottom: .35mm solid #d8dce5;
+  }
+  #ai-chat-exporter-print-root .aice-document-header h1 { margin: 0 0 2mm; font-size: 19pt; line-height: 1.25; }
+  #ai-chat-exporter-print-root .aice-document-header p { margin: 0; color: #6a7080; font-size: 8.5pt; }
+  #ai-chat-exporter-print-root h1 { font-size: 17pt; }
+  #ai-chat-exporter-print-root h2 { font-size: 14.5pt; }
+  #ai-chat-exporter-print-root h3 { font-size: 12.5pt; }
+  #ai-chat-exporter-print-root h1,
+  #ai-chat-exporter-print-root h2,
+  #ai-chat-exporter-print-root h3,
+  #ai-chat-exporter-print-root h4 { break-after: avoid; line-height: 1.35; }
+  #ai-chat-exporter-print-root p { orphans: 3; widows: 3; }
+  #ai-chat-exporter-print-root a { color: #234ea2; text-decoration: underline; overflow-wrap: anywhere; }
+
+  #ai-chat-exporter-print-root .aice-message { margin: 0 0 7mm; }
+  #ai-chat-exporter-print-root .aice-message-user { padding: 4mm 5mm; border-left: 1.2mm solid #8694c9; background: #f4f6fb; }
+  #ai-chat-exporter-print-root .aice-role-label { margin-bottom: 2mm; color: #667085; font-size: 8pt; font-weight: 700; letter-spacing: .04em; }
+
+  #ai-chat-exporter-print-root pre {
+    max-width: 100% !important;
+    padding: 4mm !important;
+    border: .25mm solid #d7dae1 !important;
+    border-radius: 2mm;
+    background: #f6f7f9 !important;
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    tab-size: 4;
+    font: 8.8pt/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace !important;
+  }
+  #ai-chat-exporter-print-root code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace !important; }
+
+  #ai-chat-exporter-print-root table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: auto;
+    font-size: 9.3pt;
+  }
+  #ai-chat-exporter-print-root th,
+  #ai-chat-exporter-print-root td {
+    min-width: 0 !important;
+    padding: 2mm 2.5mm !important;
+    border: .25mm solid #aeb4c0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+  }
+  #ai-chat-exporter-print-root th { background: #eef0f4 !important; font-weight: 700; }
+  #ai-chat-exporter-print-root thead { display: table-header-group; }
+
+  #ai-chat-exporter-print-root img,
+  #ai-chat-exporter-print-root svg,
+  #ai-chat-exporter-print-root canvas { max-width: 100% !important; height: auto !important; object-fit: contain; }
+  #ai-chat-exporter-print-root figure,
+  #ai-chat-exporter-print-root blockquote { margin-inline: 0; }
+  #ai-chat-exporter-print-root blockquote { padding-left: 4mm; border-left: 1mm solid #ccd1dc; color: #3f4655; }
+
+  #ai-chat-exporter-print-root .aice-preserved-math,
+  #ai-chat-exporter-print-root math,
+  #ai-chat-exporter-print-root mjx-container,
+  #ai-chat-exporter-print-root .katex {
+    max-width: 100% !important;
+  }
+  #ai-chat-exporter-print-root .aice-display-math,
+  #ai-chat-exporter-print-root .katex-display,
+  #ai-chat-exporter-print-root mjx-container[display="true"] {
+    display: block !important;
+    margin: 3mm auto !important;
+    text-align: center !important;
+    overflow: visible !important;
+    break-inside: avoid;
+  }
+  #ai-chat-exporter-print-root .aice-display-math > *,
+  #ai-chat-exporter-print-root .katex-display > *,
+  #ai-chat-exporter-print-root mjx-container[display="true"] > * {
+    transform-origin: left center;
+  }
+
+  #ai-chat-exporter-print-root pre,
+  #ai-chat-exporter-print-root figure,
+  #ai-chat-exporter-print-root img,
+  #ai-chat-exporter-print-root blockquote { break-inside: avoid; }
+  #ai-chat-exporter-print-root table { break-inside: auto; }
+  #ai-chat-exporter-print-root tr { break-inside: avoid; break-after: auto; }
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>AI Chat Exporter 수동 테스트 자료</title>
+  <style>
+    body { max-width: 900px; margin: 40px auto; font-family: system-ui, sans-serif; line-height: 1.6; }
+    math { font-size: 1.25em; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #999; padding: 6px; }
+    pre { padding: 16px; background: #f2f3f5; }
+    .test-image { display: inline-grid; place-items: center; width: 260px; height: 120px; margin: 8px; color: white; background: #5064d6; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>수식·표·코드·이미지 Fixture</h1>
+    <section data-message-author-role="assistant">
+      <p>기본 수식: <math><mi>F</mi><mo>=</mo><mi>m</mi><mi>a</mi></math></p>
+      <p>분수: <math><mi>F</mi><mo>=</mo><mi>G</mi><mfrac><mrow><mi>M</mi><mi>m</mi></mrow><msup><mi>r</mi><mn>2</mn></msup></mfrac></math></p>
+      <p>파동함수: <math><mi>ψ</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi>A</mi><msup><mi>e</mi><mrow><mi>i</mi><mo>(</mo><mi>k</mi><mi>x</mi><mo>−</mo><mi>ω</mi><mi>t</mi><mo>)</mo></mrow></msup></math></p>
+      <table>
+        <thead><tr><th>물리량</th><th>기호</th><th>단위</th><th>설명</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td>힘</td><td>F</td><td>N</td><td>질량과 가속도의 곱</td><td>벡터</td></tr>
+          <tr><td>에너지</td><td>E</td><td>J</td><td>일을 할 수 있는 능력</td><td>스칼라</td></tr>
+          <tr><td>속도</td><td>v</td><td>m/s</td><td>변위의 시간 변화율</td><td>벡터</td></tr>
+        </tbody>
+      </table>
+      <pre><code>function fibonacci(count) {
+  const values = [0, 1];
+  for (let index = 2; index &lt; count; index += 1) {
+    values.push(values[index - 1] + values[index - 2]);
+  }
+  return values.slice(0, count);
+}</code></pre>
+      <div class="test-image">테스트 이미지 1</div><div class="test-image">테스트 이미지 2</div>
+    </section>
+  </main>
+</body>
+</html>
