@@ -2,7 +2,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import assert from "node:assert/strict";
 const context = vm.createContext({});
-vm.runInContext(fs.readFileSync("content/exporter/hwp-equations.js", "utf8"), context);
+vm.runInContext(fs.readFileSync("chrome-extension/content/exporter/hwp-equations.js", "utf8"), context);
 const convert = context.AIChatExporter.hwpEquations.fromLatex;
 assert.equal(convert(String.raw`\frac{dy}{dt}`), "{d y} over {d t}");
 assert.equal(convert(String.raw`e^{-bt/m}`), "e ^{- b t / m}");

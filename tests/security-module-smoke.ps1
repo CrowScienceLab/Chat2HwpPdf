@@ -2,9 +2,9 @@
 param([string]$ModulePath)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$moduleDll = Join-Path $projectRoot 'native-host\security\official\FilePathCheckerModuleExample.dll'
+$moduleDll = Join-Path $projectRoot 'windows-helper\security\official\FilePathCheckerModuleExample.dll'
 if ($ModulePath) { $moduleDll = (Resolve-Path -LiteralPath $ModulePath).Path }
-$hostExe = Join-Path $projectRoot 'native-host\bin\AIChatExporter.HwpHost.exe'
+$hostExe = Join-Path $projectRoot 'windows-helper\bin\AIChatExporter.HwpHost.exe'
 $outputFile = Join-Path $projectRoot 'tmp\equations\security-module.hwpx'
 $inputFile = Join-Path $projectRoot 'tmp\equations\fixture.json'
 $registryPath = 'Software\HNC\HwpAutomation\Modules'

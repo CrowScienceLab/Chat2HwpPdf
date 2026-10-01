@@ -3,9 +3,9 @@ dist/
 tmp/
 _local-history/
 vendor/
-native-host/bin/
-native-host/security/official/
-native-host/security/official-automation.zip
+windows-helper/bin/
+windows-helper/security/official/
+windows-helper/security/official-automation.zip
 docs/*.hwpx
 docs/*-preview.png
 docs/phase-1-verification.md

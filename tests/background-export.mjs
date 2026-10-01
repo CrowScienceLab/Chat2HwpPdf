@@ -25,7 +25,7 @@ const chrome = {
   }
 };
 const context = { chrome };
-vm.runInNewContext(fs.readFileSync(new URL('../background.js', import.meta.url), 'utf8'), { ...context });
+vm.runInNewContext(fs.readFileSync(new URL('../chrome-extension/background.js', import.meta.url), 'utf8'), { ...context });
 const send = message => new Promise(resolve => listener(message,
   { id: 'test', url: chrome.runtime.getURL('popup/popup.html') }, resolve));
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -54,6 +54,6 @@ port.onDisconnect.fn(); await tick();
 assert.equal(data.hwpExportJob.state, 'error');
 assert.equal(data.hwpExportJob.error, 'host exited');
 data.hwpExportJob.state = 'running';
-vm.runInNewContext(fs.readFileSync(new URL('../background.js', import.meta.url), 'utf8'), { ...context });
+vm.runInNewContext(fs.readFileSync(new URL('../chrome-extension/background.js', import.meta.url), 'utf8'), { ...context });
 assert.equal((await send({ type: 'GET_HWP_EXPORT' })).hwpExportJob.state, 'error');
 console.log('Worker export: chunking, popup-independent completion, duplicate rejection, disconnect, restart recovery passed.');

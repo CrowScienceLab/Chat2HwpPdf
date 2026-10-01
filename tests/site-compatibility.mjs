@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 
 const scripts = [
-  'content/utils/dom-utils.js', 'content/utils/site-detector.js', 'content/adapters/base.js',
-  'content/adapters/gemini.js', 'content/adapters/notebooklm.js', 'content/adapters/claude.js', 'content/adapters/generic.js',
-  'content/exporter/math-preserver.js', 'content/exporter/hwp-equations.js', 'content/exporter/text-math.js',
-  'content/exporter/content-cleaner.js', 'content/exporter/dom-cloner.js', 'content/exporter/hwp-package.js'
+  'chrome-extension/content/utils/dom-utils.js', 'chrome-extension/content/utils/site-detector.js', 'chrome-extension/content/adapters/base.js',
+  'chrome-extension/content/adapters/gemini.js', 'chrome-extension/content/adapters/notebooklm.js', 'chrome-extension/content/adapters/claude.js', 'chrome-extension/content/adapters/generic.js',
+  'chrome-extension/content/exporter/math-preserver.js', 'chrome-extension/content/exporter/hwp-equations.js', 'chrome-extension/content/exporter/text-math.js',
+  'chrome-extension/content/exporter/content-cleaner.js', 'chrome-extension/content/exporter/dom-cloner.js', 'chrome-extension/content/exporter/hwp-package.js'
 ];
 function page(host, html) {
   const dom = new JSDOM(html, { url: `https://${host}/`, runScripts: 'outside-only', pretendToBeVisual: true });

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="100" fill="#ffffff"/>
+<g transform="translate(42 18) scale(3.4)">
+<path d="M28 89C32 59 51 28 84 25L91 37 85 42C82 61 64 77 43 80L28 99Z" fill="#16171b"/>
+<path d="m89 30 18 7-21 7z" fill="#f4bc27"/>
+<path d="m39 80 36-34-17 32z" fill="#393b42"/>
+<path d="m46 57 24 4-14 9-18-1z" fill="#16171b"/>
+<circle cx="83" cy="34" r="2.5" fill="#ffffff"/>
+</g>
+<text x="256" y="423" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="57" fill="#16171b">f(x) = HWP</text>
+<rect x="133" y="453" width="246" height="7" rx="3.5" fill="#f4bc27"/>
+</svg>

@@ -20,5 +20,5 @@ http.createServer((request, response) => {
   }
   if (request.method !== "GET" || !files.has(request.url)) { response.writeHead(404); response.end(); return; }
   response.writeHead(200, { "Content-Type": request.url.endsWith(".html") ? "text/html; charset=utf-8" : "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
-  response.end(fs.readFileSync(path.join(root, request.url)));
+  response.end(fs.readFileSync(path.join(root, request.url.startsWith('/content/') ? '/chrome-extension' + request.url : request.url)));
 }).listen(18766, "127.0.0.1", () => console.log("http://127.0.0.1:18766/tests/hwp-equation-browser.html"));

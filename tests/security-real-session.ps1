@@ -5,7 +5,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $log = Join-Path $projectRoot 'tmp\equations\real-session.log'
 Start-Transcript -LiteralPath $log -Force
 try {
-  $setup = Join-Path $projectRoot 'native-host\bin\Chat2HwpPdf-Setup.exe'
+  $setup = Join-Path $projectRoot 'windows-helper\bin\Chat2HwpPdf-Setup.exe'
   $selfTest = Start-Process -FilePath $setup -ArgumentList '--self-test' -WindowStyle Hidden -Wait -PassThru
   if ($selfTest.ExitCode -ne 0) { throw 'Installer isolated self-test failed' }
   & (Join-Path $PSScriptRoot 'security-module-smoke.ps1')
@@ -33,7 +33,7 @@ try {
     $edited = Join-Path $projectRoot 'tmp\equations\installed-module-edited.hwpx'
     & $installedHost --edit-test $saved $edited
     if ($LASTEXITCODE -ne 0) { throw 'Installed host editing failed' }
-    [ordered]@{ passed=$true; version='0.4.1'; extensionId=$extensionId; installRoot=$appRoot; outputDirectory=$output; modulePath=(Join-Path $moduleDirectory 'FilePathCheckerModuleExample.dll'); saved=$saved; edited=$edited } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $projectRoot 'tmp\equations\installation-result.json') -Encoding UTF8
+    [ordered]@{ passed=$true; version=(Get-Content -LiteralPath (Join-Path $projectRoot 'release.json') -Raw | ConvertFrom-Json).version; extensionId=$extensionId; installRoot=$appRoot; outputDirectory=$output; modulePath=(Join-Path $moduleDirectory 'FilePathCheckerModuleExample.dll'); saved=$saved; edited=$edited } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $projectRoot 'tmp\equations\installation-result.json') -Encoding UTF8
     'PASS: current-user installation, conversion, equation edit and save.'
   }
 } catch {

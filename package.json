@@ -1,14 +1,19 @@
 {
   "name": "crow-chat2hwp-pdf",
-  "version": "0.4.4",
+  "version": "0.4.7",
   "private": true,
   "description": "수식Chat to HWPX/PDF — Crow Science Lab.",
   "scripts": {
-    "test": "node tests/validate.mjs && node tests/hwp-equations.mjs && node tests/background-export.mjs && node tests/site-compatibility.mjs",
-    "vendor": "node scripts/vendor.mjs"
+    "test": "node tests/validate.mjs && node tests/hwp-equations.mjs && node tests/background-export.mjs && node tests/site-compatibility.mjs && node tests/export-lifecycle.mjs && node tests/onboarding.mjs",
+    "test:print": "node tests/print-regression.mjs",
+    "vendor": "node scripts/vendor.mjs",
+    "version:sync": "node scripts/sync-version.mjs",
+    "build": "npm run version:sync && npm run vendor && powershell -NoProfile -ExecutionPolicy Bypass -File windows-helper/build-setup.ps1 && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package.ps1",
+    "test:ui": "node tests/ui-onboarding.mjs"
   },
   "devDependencies": {
     "@resvg/resvg-js": "2.6.2",
-    "jsdom": "26.1.0"
+    "jsdom": "26.1.0",
+    "playwright": "1.62.1"
   }
 }

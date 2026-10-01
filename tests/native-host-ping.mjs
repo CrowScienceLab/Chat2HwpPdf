@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const executable = process.argv[2] || path.join(root, "native-host/bin/AIChatExporter.HwpHost.exe");
+const executable = process.argv[2] || path.join(root, "windows-helper/bin/AIChatExporter.HwpHost.exe");
 const child = spawn(executable, [], { windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
 const chunks = [];
 let stderr = "";
@@ -38,7 +38,7 @@ for (const requestId of requests) {
   assert.ok(length > 0 && bytes.length - offset >= length, "Truncated response");
   const reply = JSON.parse(bytes.subarray(offset, offset + length));
   offset += length;
-  assert.deepEqual(reply, { ok: true, type: "pong", requestId, hostVersion: "0.4.1" });
+  assert.deepEqual(reply, { ok: true, type: "pong", requestId, hostVersion: JSON.parse((await import("node:fs")).readFileSync(path.join(root, "release.json"), "utf8")).version });
 }
 assert.equal(offset, bytes.length, "Unexpected stdout outside native frames");
 console.log("PASS: two framed ping responses; direct process test only, not Chrome discovery.");

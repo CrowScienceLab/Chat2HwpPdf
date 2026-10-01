@@ -1,44 +1,52 @@
 [CmdletBinding()]
 param()
 $ErrorActionPreference = 'Stop'
+[void][Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem')
+function Get-ArtifactHash([string]$filePath) {
+  $algorithm = [Security.Cryptography.SHA256]::Create(); $stream = [IO.File]::OpenRead($filePath)
+  try { return [BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace('-','') } finally { $stream.Dispose(); $algorithm.Dispose() }
+}
+
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$manifest = Get-Content -LiteralPath (Join-Path $projectRoot 'manifest.json') -Raw | ConvertFrom-Json
-$version = $manifest.version
+$extensionRoot = Join-Path $projectRoot 'chrome-extension'
+$release = Get-Content -LiteralPath (Join-Path $projectRoot 'release.json') -Raw | ConvertFrom-Json
+$manifest = Get-Content -LiteralPath (Join-Path $extensionRoot 'manifest.json') -Raw | ConvertFrom-Json
+$version = $release.version
+if ($version -notmatch '^\d+\.\d+\.\d+$' -or $manifest.version -ne $version) { throw 'Release/manifest version mismatch' }
+$setup = Join-Path $projectRoot 'windows-helper\bin\Chat2HwpPdf-Setup.exe'
+$hostBinary = Join-Path $projectRoot 'windows-helper\bin\AIChatExporter.HwpHost.exe'
+foreach ($file in @($setup, $hostBinary)) { if ([Diagnostics.FileVersionInfo]::GetVersionInfo($file).FileVersion -ne ($version+'.0')) { throw "Native binary version mismatch: $file" } }
 $dist = Join-Path $projectRoot "dist\$version"
+$archiveRoot = Join-Path (Split-Path -Parent $projectRoot) '_archive\AI_Chat2Hwpx_Pdf'
 if (Test-Path -LiteralPath $dist) {
-  $archive = Join-Path (Join-Path $projectRoot '_local-history\package-history') ("package-$version-" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
-  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $archive) | Out-Null
-  # Both paths are fixed descendants of the coding workspace; preserve previous artifacts.
-  Move-Item -LiteralPath $dist -Destination $archive
+  $resolved = (Resolve-Path -LiteralPath $dist).Path
+  if (-not $resolved.StartsWith($projectRoot+'\dist\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected distribution path' }
+  New-Item -ItemType Directory -Force -Path $archiveRoot | Out-Null
+  Move-Item -LiteralPath $resolved -Destination (Join-Path $archiveRoot ("package-$version-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')))
 }
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
-$stage = Join-Path $projectRoot ("tmp\package-" + [Guid]::NewGuid().ToString('N'))
+$stage = Join-Path $projectRoot ('tmp\package-'+[Guid]::NewGuid().ToString('N'))
 $extension = Join-Path $stage 'extension'
 $source = Join-Path $stage 'source'
 New-Item -ItemType Directory -Force -Path $extension,$source | Out-Null
-$runtime = @('manifest.json','background.js','popup','content','styles','icons','setup')
-foreach ($relative in $runtime) {
-  Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $extension -Recurse
-}
+Copy-Item -Path (Join-Path $extensionRoot '*') -Destination $extension -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $extension
-Compress-Archive -Path (Join-Path $extension '*') -DestinationPath (Join-Path $dist "Chat2HwpPdf-Chrome-$version.zip")
-$sourceFiles = @('manifest.json','background.js','popup','content','styles','icons','setup','scripts','tests','package.json','package-lock.json','README.md','HANDOFF.md','THIRD_PARTY_NOTICES.md','.gitignore')
-foreach ($relative in $sourceFiles) { Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $source -Recurse }
-New-Item -ItemType Directory -Force -Path (Join-Path $source 'docs'),(Join-Path $source 'native-host\security') | Out-Null
-foreach ($doc in @('index.md','index.html','privacy.md','privacy.html','advanced-install.md','store-listing.ko.md','hwp-editable-equations.md')) {
-  Copy-Item -LiteralPath (Join-Path $projectRoot "docs\$doc") -Destination (Join-Path $source 'docs')
-}
-Copy-Item -LiteralPath (Join-Path $projectRoot 'native-host\src') -Destination (Join-Path $source 'native-host') -Recurse
-Get-ChildItem -LiteralPath (Join-Path $projectRoot 'native-host') -File | Where-Object { $_.Extension -eq '.ps1' -or $_.Name -eq 'README.md' } | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $source 'native-host') }
-Copy-Item -LiteralPath (Join-Path $projectRoot 'native-host\security\README.md') -Destination (Join-Path $source 'native-host\security')
-Compress-Archive -Path (Join-Path $source '*') -DestinationPath (Join-Path $dist "Chat2HwpPdf-Source-$version.zip")
-Copy-Item -LiteralPath (Join-Path $projectRoot 'native-host\bin\Chat2HwpPdf-Setup.exe') -Destination $dist
-New-Item -ItemType Directory -Force -Path (Join-Path $dist 'docs') | Out-Null
-foreach ($relative in @('README.md','HANDOFF.md','THIRD_PARTY_NOTICES.md','docs\index.md','docs\index.html','docs\privacy.md','docs\privacy.html','docs\advanced-install.md','docs\store-listing.ko.md','docs\hwp-editable-equations.md')) { Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination (Join-Path $dist $relative) }
-$hashes = Get-ChildItem -LiteralPath $dist -File -Recurse | Sort-Object FullName | ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.FullName.Substring($dist.Length + 1).Replace('\','/') }
+[IO.Compression.ZipFile]::CreateFromDirectory($extension, (Join-Path $dist "Chat2HwpPdf-Chrome-$version.zip"))
+foreach ($relative in @('chrome-extension','branding','scripts','tests','docs','release.json','package.json','package-lock.json','README.md','HANDOFF.md','THIRD_PARTY_NOTICES.md','.gitignore')) { Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $source -Recurse }
+New-Item -ItemType Directory -Force -Path (Join-Path $source 'windows-helper\security') | Out-Null
+Copy-Item -LiteralPath (Join-Path $projectRoot 'windows-helper\src') -Destination (Join-Path $source 'windows-helper') -Recurse
+Get-ChildItem -LiteralPath (Join-Path $projectRoot 'windows-helper') -File | Where-Object { $_.Extension -eq '.ps1' -or $_.Name -eq 'README.md' } | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $source 'windows-helper') }
+foreach ($relative in @('README.md','official-automation.zip')) { Copy-Item -LiteralPath (Join-Path $projectRoot "windows-helper\security\$relative") -Destination (Join-Path $source 'windows-helper\security') }
+[IO.Compression.ZipFile]::CreateFromDirectory($source, (Join-Path $dist "Chat2HwpPdf-Source-$version.zip"))
+Copy-Item -LiteralPath $setup -Destination $dist
+Copy-Item -LiteralPath (Join-Path $projectRoot 'chrome-extension\icons\icon-128.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Icon-128.png')
+Copy-Item -LiteralPath (Join-Path $projectRoot 'branding\app-large.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Large-512.png')
+Copy-Item -LiteralPath (Join-Path $projectRoot 'branding\store-promo.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Store-440x280.png')
+Copy-Item -LiteralPath (Join-Path $projectRoot 'docs\release-0.4.7.md') -Destination $dist
+$hashes = Get-ChildItem -LiteralPath $dist -File | Sort-Object Name | ForEach-Object { '{0}  {1}' -f (Get-ArtifactHash $_.FullName).ToLowerInvariant(), $_.Name }
 [IO.File]::WriteAllLines((Join-Path $dist 'SHA256SUMS.txt'), $hashes, (New-Object Text.UTF8Encoding($false)))
 $resolvedStage = (Resolve-Path -LiteralPath $stage).Path
-$expectedStageRoot = (Join-Path $projectRoot 'tmp') + '\'
-if (-not $resolvedStage.StartsWith($expectedStageRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected package staging path' }
-Remove-Item -LiteralPath $resolvedStage -Recurse -Force
+if (-not $resolvedStage.StartsWith($projectRoot+'\tmp\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected staging path' }
+New-Item -ItemType Directory -Force -Path $archiveRoot | Out-Null
+Move-Item -LiteralPath $resolvedStage -Destination (Join-Path $archiveRoot ("stage-$version-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')))
 Write-Output $dist

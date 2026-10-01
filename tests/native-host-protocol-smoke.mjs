@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 
-const host = process.argv[2] || path.resolve(import.meta.dirname, '../native-host/bin/AIChatExporter.HwpHost.exe');
+const host = process.argv[2] || path.resolve(import.meta.dirname, '../windows-helper/bin/AIChatExporter.HwpHost.exe');
 const requestId = `smoke-${Date.now()}`;
 const payload = JSON.stringify({
   schemaVersion: 2,

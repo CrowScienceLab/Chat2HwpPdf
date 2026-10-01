@@ -14,6 +14,8 @@ ChatGPT·Gemini·Gemini Notebook(NotebookLM)·Claude에서 현재 답변·전체
 
 HWPX에는 Windows 데스크톱 한글과 별도 도우미 설치가 필요합니다. .hwp 출력은 제공하지 않습니다. 한컴의 공식 제품이나 제휴 제품이 아닙니다.
 
+확장 앱의 설치 안내에서 같은 버전의 Windows 도우미를 직접 다운로드합니다. 설치 파일을 실행하고 설치를 누르면 기본 설정으로 설치되며, 안내 화면으로 돌아오면 연결을 확인합니다. PDF에는 도우미가 필요하지 않습니다.
+
 Windows 도우미와 설치 안내: https://github.com/CrowScienceLab/Chat2HwpPdf/releases
 
 개인정보처리방침: https://crowsciencelab.github.io/Chat2HwpPdf/privacy.html
