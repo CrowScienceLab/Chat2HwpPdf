@@ -1,4 +1,4 @@
-# 수식Chat Windows 도우미 · 0.4.7
+# 수식Chat Windows 도우미 · 0.4.8
 
 로컬 HTML·수식 패키지를 한글 COM으로 HWPX로 저장한 후 한글 편집 창에서 엽니다.
 

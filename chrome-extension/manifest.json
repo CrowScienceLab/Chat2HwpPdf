@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "수식Chat to HWPX/PDF",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "author": "Crow Science Lab.",
   "minimum_chrome_version": "105",
   "background": {

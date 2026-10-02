@@ -1,6 +1,6 @@
 {
   "name": "crow-chat2hwp-pdf",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "private": true,
   "description": "수식Chat to HWPX/PDF — Crow Science Lab.",
   "scripts": {

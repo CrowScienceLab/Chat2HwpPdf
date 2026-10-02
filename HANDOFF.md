@@ -3,7 +3,7 @@
 작업 기준: `D:\App coding\AI_Chat2Hwpx_Pdf`
 저장소: https://github.com/CrowScienceLab/Chat2HwpPdf
 웹스토어 ID: `njcnchmapljncehmmfplijnlfgloiibb`
-현재 버전: 확장·도우미·설치 프로그램 모두 `0.4.7`.
+현재 버전: 확장·도우미·설치 프로그램 모두 `0.4.8`.
 
 이전 `AI-Chat-Exporter` 디렉터리를 위 경로로 옮겼습니다. `.git`와 사용자 작업을 보존했으며 별도 병렬 프로젝트를 만들지 않았습니다. 개발 영역은 `chrome-extension`과 `windows-helper`로 구분합니다. 압축해제 로드 대상은 프로젝트 전체가 아닌 `chrome-extension`입니다. 경로 변경으로 개발용 확장 ID가 달라질 수 있으므로 도우미의 고급 설정에서 확인하세요. 웹스토어 ID는 그대로입니다.
 
@@ -24,3 +24,5 @@ PDF에는 도우미를 요구하지 않습니다. HWPX는 변환 전에 도우�
 구 배포본·로컬 기록·이전 안내서·일회성 비교 검사는 `D:\App coding\_archive\AI_Chat2Hwpx_Pdf\2026-10-02-structure`에 보관합니다. 기존 보고서는 `D:\App coding\Segyo-On\docs\maintenance`에 그대로 유지합니다. 이번 결과도 해당 경로의 날짜별 작업 폴더에 기록합니다. 임시 결과는 작업 종료 후 `_archive`로 이동합니다.
 
 소스·패키지 생성과 외부 공개 상태는 별도로 기록해야 합니다. Chrome 웹스토어 접근은 이전 대화에서 사이트 접근 정책에 의해 차단되었으며 업로드 성공으로 간주하지 않습니다. 웹스토어 ZIP 교체·심사 제출과 아이콘/홍보 이미지 교체가 필요합니다. GitHub 배포 시 확장·EXE·소스 ZIP·이미지·체크섬을 같은 버전으로 올립니다.
+
+2026-10-02 추가: 사용자 첨부 이미지를 기준으로 까마귀·f(x) 문서·화살표·HWP 문서 아이콘을 적용했습니다. 큰 원본은 branding/app-master.png, 작은 까마귀 변형은 branding/crow-master.png입니다. 원본 첨부는 branding/reference-original.png로 보존합니다. Chrome PNG/Windows ICO/웹사이트/소개 이미지와 설치 EXE를 0.4.8로 다시 생성합니다. 이전 SVG 자산은 아카이브에 보존하고 실제 화면은 PNG를 사용합니다.

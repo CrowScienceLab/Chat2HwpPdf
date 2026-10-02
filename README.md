@@ -1,6 +1,6 @@
 # 수식Chat to HWPX/PDF
 
-Crow Science Lab. · Crow Ink · 확장 앱 / Windows 도우미 **0.4.7**
+Crow Science Lab. · Crow Ink · 확장 앱 / Windows 도우미 **0.4.8**
 
 AI 대화의 수식을 한글에서 편집할 수 있는 수식 개체로 보존하여 HWPX로 저장하고, Chrome 인쇄 기능으로 PDF를 저장합니다. 실제 출력 형식은 HWPX와 PDF입니다.
 
@@ -39,7 +39,7 @@ npm run test:print
 node tests/native-host-ping.mjs
 ```
 
-`npm run build`는 `release.json`에서 두 앱의 버전과 Windows 파일 버전을 동기화하고 아이콘·도우미·배포 패키지를 생성합니다. Windows의 .NET Framework x86 컴파일러와 Node.js가 필요합니다. 빌드 전 검증과 변경 내용은 [0.4.7 배포 기록](docs/release-0.4.7.md)을 참고하세요.
+`npm run build`는 `release.json`에서 두 앱의 버전과 Windows 파일 버전을 동기화하고 아이콘·도우미·배포 패키지를 생성합니다. Windows의 .NET Framework x86 컴파일러와 Node.js가 필요합니다. 빌드 전 검증과 변경 내용은 [0.4.8 배포 기록](docs/release-0.4.8.md)을 참고하세요.
 
 ## 데이터와 제거
 

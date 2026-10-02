@@ -42,7 +42,7 @@ Copy-Item -LiteralPath $setup -Destination $dist
 Copy-Item -LiteralPath (Join-Path $projectRoot 'chrome-extension\icons\icon-128.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Icon-128.png')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'branding\app-large.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Large-512.png')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'branding\store-promo.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Store-440x280.png')
-Copy-Item -LiteralPath (Join-Path $projectRoot 'docs\release-0.4.7.md') -Destination $dist
+Copy-Item -LiteralPath (Join-Path $projectRoot 'docs\release-0.4.8.md') -Destination $dist
 $hashes = Get-ChildItem -LiteralPath $dist -File | Sort-Object Name | ForEach-Object { '{0}  {1}' -f (Get-ArtifactHash $_.FullName).ToLowerInvariant(), $_.Name }
 [IO.File]::WriteAllLines((Join-Path $dist 'SHA256SUMS.txt'), $hashes, (New-Object Text.UTF8Encoding($false)))
 $resolvedStage = (Resolve-Path -LiteralPath $stage).Path
