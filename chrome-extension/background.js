@@ -21,6 +21,10 @@ async function startExport(request) {
     equationCount: request.payload.equations?.length || 0,
     omittedEquationCount: request.payload.diagnostics?.omittedEquations?.length || 0,
     omissionSummary: (request.payload.diagnostics?.omittedEquations || []).slice(0, 3).map(item => `${item.number}번: ${item.reason}`).join(' · '),
+    media: request.payload.diagnostics?.media ? {
+      requested: request.payload.diagnostics.media.requested, included: request.payload.diagnostics.media.included,
+      omitted: request.payload.diagnostics.media.omitted, excluded: request.payload.diagnostics.media.excluded
+    } : null,
     warnings: request.payload.diagnostics?.warnings || [] };
   activeJob = job;
   let port;
@@ -66,8 +70,40 @@ async function startExport(request) {
   }
 }
 
+const mediaExports = new Map();
+let lastCapture = 0;
+let captureChain = Promise.resolve();
+async function captureExportView(message, sender) {
+  const session = mediaExports.get(message.exportId);
+  if (sender.id !== chrome.runtime.id || sender.frameId !== 0 || !sender.tab || !session || session.tabId !== sender.tab.id || Date.now() > session.expires) throw new Error('그림 내보내기를 다시 시작해 주세요.');
+  const [active] = await chrome.tabs.query({active:true, windowId:sender.tab.windowId});
+  if (active?.id !== sender.tab.id) throw new Error('내보내는 동안 원래 대화 탭을 유지해 주세요.');
+  if (session.captures++ >= 120) throw new Error('그림이 많습니다. 대화를 나누어 내보내 주세요.');
+  const delay = Math.max(0,600-(Date.now()-lastCapture));
+  if (delay) await new Promise(resolve=>setTimeout(resolve,delay));
+  // Recheck after the delay so switching tabs never captures another page.
+  const [current] = await chrome.tabs.query({active:true, windowId:sender.tab.windowId});
+  if(current?.id!==sender.tab.id)throw new Error('원래 대화 탭에서 다시 내보내 주세요.');
+  lastCapture=Date.now();
+  const dataUrl = await chrome.tabs.captureVisibleTab(sender.tab.windowId,{format:'png'});
+  const [after] = await chrome.tabs.query({active:true,windowId:sender.tab.windowId});
+  if(after?.id!==sender.tab.id)throw new Error('캡처 중 탭이 변경되었습니다. 원래 탭에서 다시 시도하세요.');
+  return {ok:true,dataUrl};
+}
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
+  if(message?.type==='CAPTURE_EXPORT_VIEW'){
+    const run=captureChain.then(()=>captureExportView(message,sender));
+    captureChain=run.catch(()=>{});
+    run.then(respond,error=>respond({ok:false,error:error.message}));return true;
+  }
   if (sender.id !== chrome.runtime.id || sender.url !== chrome.runtime.getURL("popup/popup.html")) return;
+  if(message?.type==='BEGIN_MEDIA_EXPORT'){
+    const id=crypto.randomUUID();
+    for(const [key,value] of mediaExports)if(Date.now()>value.expires)mediaExports.delete(key);
+    mediaExports.set(id,{tabId:message.tabId,expires:Date.now()+300000,captures:0});
+    respond({ok:true,exportId:id});return;
+  }
+  if(message?.type==='END_MEDIA_EXPORT'){mediaExports.delete(message.exportId);respond({ok:true});return;}
   if (message?.type === "START_HWP_EXPORT") {
     startExport(message).then(respond, (error) => respond({ ok: false, error: error.message }));
     return true;

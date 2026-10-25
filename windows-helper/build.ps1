@@ -15,6 +15,6 @@ if (-not (Test-Path -LiteralPath $compiler)) {
 }
 
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
-& $compiler /nologo /target:exe /platform:x86 /optimize+ /out:$output /reference:System.Web.Extensions.dll /reference:System.Windows.Forms.dll /reference:Microsoft.CSharp.dll $source (Join-Path $hostRoot 'src\ReleaseInfo.cs') "/win32icon:$(Join-Path (Split-Path -Parent $hostRoot) 'branding\app.ico')"
+& $compiler /nologo /target:exe /platform:x86 /optimize+ /out:$output /reference:System.Web.Extensions.dll /reference:System.Windows.Forms.dll /reference:Microsoft.CSharp.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll /reference:System.Xml.dll $source (Join-Path $hostRoot 'src\ReleaseInfo.cs') "/win32icon:$(Join-Path (Split-Path -Parent $hostRoot) 'branding\app.ico')"
 if ($LASTEXITCODE -ne 0) { throw "네이티브 호스트 빌드 실패: $LASTEXITCODE" }
 Write-Output $output

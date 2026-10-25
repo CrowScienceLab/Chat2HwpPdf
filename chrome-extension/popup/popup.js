@@ -28,6 +28,7 @@
     includeDate: true,
     includeUser: true,
     includeAssistant: true,
+    includeImages: true,
     wrapCode: true
   };
 
@@ -58,6 +59,7 @@
       includeDate: $("#include-date").checked,
       includeUser: $("#include-user").checked,
       includeAssistant: $("#include-assistant").checked,
+      includeImages: !$("#exclude-images").checked,
       wrapCode: $("#wrap-code").checked,
       mathSource: $("#math-source").value
     };
@@ -73,6 +75,7 @@
     $("#include-user").checked = value.includeUser;
     $("#include-assistant").checked = value.includeAssistant;
     $("#wrap-code").checked = value.wrapCode;
+    $("#exclude-images").checked = value.includeImages === false;
     $("#math-source").value = ['auto','latex','mathml'].includes(value.mathSource) ? value.mathSource : 'auto';
   }
 
@@ -89,33 +92,46 @@
     return message.length > 85 ? message.slice(0, 82) + "…" : message;
   }
 
+  function mediaSummary(media) {
+    if (!media?.requested && !media?.excluded) return '';
+    if (media.excluded) return ' 그림 제외.';
+    return ' 그림 ' + media.included + '/' + media.requested + '개 포함' + (media.omitted ? ' · ' + media.omitted + '개 실패(문서의 사유 확인)' : '') + '.';
+  }
+
   function setBusy(busy) {
     document.querySelectorAll("button").forEach((button) => { button.disabled = busy; });
   }
 
   async function exportMode(mode) {
+    let mediaExportId;
     const status = $("#status");
     status.className = "status";
     status.textContent = "PDF 준비 중…";
     setBusy(true);
     try {
       await persistSettings();
+      const mediaSession = await chrome.runtime.sendMessage({ type:'BEGIN_MEDIA_EXPORT', tabId:activeTab.id });
+      if (!mediaSession?.ok) throw new Error(mediaSession?.error || '내보내기 준비 실패');
+      mediaExportId = mediaSession.exportId;
+      if (settings.includeImages) status.textContent = "그림을 포함하는 중… 이 탭을 유지해 주세요.";
       const styleResponse = await fetch(chrome.runtime.getURL("styles/print.css"));
       if (!styleResponse.ok) throw new Error("확장 프로그램의 인쇄 스타일을 불러오지 못했습니다.");
       const printCss = await styleResponse.text();
       await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: SCRIPT_FILES });
       const response = await chrome.tabs.sendMessage(activeTab.id, {
-        type: "AI_CHAT_EXPORTER_EXPORT",
+        type: "AI_CHAT_EXPORTER_EXPORT_V2",
+        exportId: mediaExportId,
         mode,
         settings,
         printCss
       });
       if (!response?.ok) throw new Error(response?.error || "내보내기를 시작하지 못했습니다.");
       status.className = "status success";
-      status.textContent = "PDF 인쇄 창 열기 완료.";
+      status.textContent = "PDF 인쇄 창 열기 완료." + mediaSummary(response.media);
     } catch (error) {
       status.textContent = shortError(error);
     } finally {
+      if (mediaExportId) await chrome.runtime.sendMessage({type:"END_MEDIA_EXPORT",exportId:mediaExportId});
       setBusy(false);
     }
   }
@@ -128,11 +144,12 @@
     status.textContent = job.state === "running"
       ? "HWPX 변환 중…"
       : job.state === "success"
-        ? [job.omittedEquationCount ? `저장 완료 · 수식 ${job.omittedEquationCount}개 생략 (${job.omissionSummary}${job.omittedEquationCount > 3 ? ' 외' : ''})` : "HWPX 저장 완료.", job.warnings?.length ? "일부 수식 표현 확인 필요." : "", job.openWarning ? "파일을 직접 열어 주세요." : ""].filter(Boolean).join(' ')
+        ? [job.omittedEquationCount ? `저장 완료 · 수식 ${job.omittedEquationCount}개 생략 (${job.omissionSummary}${job.omittedEquationCount > 3 ? ' 외' : ''})` : "HWPX 저장 완료.", job.warnings?.length ? "일부 수식 표현 확인 필요." : "", job.openWarning ? "파일을 직접 열어 주세요." : "", mediaSummary(job.media)].filter(Boolean).join(' ')
         : shortError(job.error);
   }
 
   async function exportHwp(mode) {
+    let mediaExportId;
     const status = $("#status");
     status.className = "status";
     status.textContent = "HWPX 준비 중…";
@@ -141,14 +158,20 @@
       const granted = await chrome.permissions.request({ permissions: ["nativeMessaging"] });
       if (!granted) throw new Error("HWPX 내보내기에는 로컬 도우미 연결 권한이 필요합니다.");
       const helper = await CrowHelper.request('settings');
+      renderConnection(helper);
       if (helper.hostVersion !== chrome.runtime.getManifest().version) {
         await chrome.tabs.create({ url: chrome.runtime.getURL('setup/setup.html') });
         throw new Error(CrowHelper.versionMessage(helper));
       }
       await persistSettings();
+      const mediaSession = await chrome.runtime.sendMessage({ type:'BEGIN_MEDIA_EXPORT', tabId:activeTab.id });
+      if (!mediaSession?.ok) throw new Error(mediaSession?.error || '내보내기 준비 실패');
+      mediaExportId = mediaSession.exportId;
+      if (settings.includeImages) status.textContent = "그림을 포함하는 중… 이 탭을 유지해 주세요.";
       await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: SCRIPT_FILES });
       const response = await chrome.tabs.sendMessage(activeTab.id, {
-        type: "AI_CHAT_EXPORTER_EXPORT",
+        type: "AI_CHAT_EXPORTER_EXPORT_V2",
+        exportId: mediaExportId,
         target: "hwpx",
         mode,
         settings
@@ -169,6 +192,7 @@
         await chrome.tabs.create({ url: chrome.runtime.getURL('setup/setup.html') });
       }
     } finally {
+      if (mediaExportId) await chrome.runtime.sendMessage({type:"END_MEDIA_EXPORT",exportId:mediaExportId});
       const current = await chrome.runtime.sendMessage({ type: "GET_HWP_EXPORT" });
       setBusy(current?.hwpExportJob?.state === "running");
     }
@@ -182,7 +206,8 @@
     });
     const current = await chrome.runtime.sendMessage({ type: "GET_HWP_EXPORT" });
     renderHwpJob(current?.hwpExportJob);
-    $("#check-native").addEventListener("click", checkNativeConnection);
+    $("#check-native").addEventListener("click", () => checkNativeConnection(true));
+    if (await chrome.permissions.contains({permissions:["nativeMessaging"]})) void checkNativeConnection(false);
     const stored = await chrome.storage.local.get("exportSettings");
     settings = { ...DEFAULTS, ...(stored.exportSettings || {}) };
     fillForm(settings);
@@ -208,18 +233,28 @@
     document.querySelectorAll("input, select").forEach((input) => input.addEventListener("change", persistSettings));
   }
 
-  async function checkNativeConnection() {
+  function renderConnection(result) {
+    const connected = Boolean(result);
+    $("#helper-state").className = 'helper-state ' + (connected ? 'connected' : 'disconnected');
+    $("#check-native").dataset.connection = connected ? 'connected' : 'disconnected';
+    $("#helper-label").textContent = connected ? '연결됨' : '미연결';
+    $("#helper-version").textContent = connected ? '확장 ' + chrome.runtime.getManifest().version + ' · 도우미 ' + result.hostVersion : '';
+  }
+
+  async function checkNativeConnection(askPermission = true) {
     const status = $("#status");
     status.className = "status";
     status.textContent = "연결 확인 중…";
     setBusy(true);
     try {
-      const granted = await chrome.permissions.request({ permissions: ["nativeMessaging"] });
+      const granted = askPermission ? await chrome.permissions.request({ permissions: ["nativeMessaging"] }) : await chrome.permissions.contains({permissions:["nativeMessaging"]});
       if (!granted) throw new Error("로컬 도우미 연결 권한이 필요합니다.");
       const result = await CrowHelper.request('settings');
       status.className = result.hostVersion === chrome.runtime.getManifest().version ? "status success" : "status";
-      status.textContent = CrowHelper.versionMessage(result);
+      renderConnection(result);
+      status.textContent = result.hostVersion === chrome.runtime.getManifest().version ? "" : CrowHelper.versionMessage(result);
     } catch (error) {
+      renderConnection(null);
       status.textContent = "연결 실패 · " + shortError(error);
     } finally {
       setBusy(false);

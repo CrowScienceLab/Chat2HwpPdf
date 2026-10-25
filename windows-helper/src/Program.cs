@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Xml;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -30,6 +32,14 @@ namespace AIChatExporter.NativeHost
         public string html { get; set; }
         public string format { get; set; }
         public EquationPayload[] equations { get; set; }
+        public HeadingPayload[] headings { get; set; }
+    }
+
+    internal sealed class HeadingPayload
+    {
+        public string marker { get; set; }
+        public double fontSize { get; set; }
+        public bool blankBefore { get; set; }
     }
 
     internal sealed class EquationPayload
@@ -345,6 +355,7 @@ namespace AIChatExporter.NativeHost
                 trace("HTML open");
                 bool opened = app.Open(htmlPath, "HTML", "");
                 if (!opened) throw new InvalidOperationException("한글이 중간 HTML 문서를 열지 못했습니다.");
+                ApplyDocumentFormat(app, payload.headings ?? new HeadingPayload[0]);
                 trace("Editable equations");
                 InsertEquations(app, payload.equations ?? new EquationPayload[0]);
                 // HTML tables must occupy a text line, not float under the following equation.
@@ -363,7 +374,8 @@ namespace AIChatExporter.NativeHost
                 if (!File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
                     throw new IOException("저장된 파일을 확인하지 못했습니다: " + outputPath);
                 trace("saved");
-                try { app.Clear(1); } catch { }
+                app.Clear(1);
+                NormalizeSavedTextStyles(outputPath);
                 return outputPath;
             }
             finally
@@ -375,6 +387,78 @@ namespace AIChatExporter.NativeHost
                 }
                 try { Directory.Delete(tempDirectory, true); } catch { }
             }
+        }
+
+        private static void NormalizeSavedTextStyles(string outputPath)
+        {
+            // SelectAll in Hangul excludes table-cell text. Normalize the saved
+            // style definitions as well so cells use the same body defaults.
+            using (var zip = ZipFile.Open(outputPath, ZipArchiveMode.Update)) {
+                var entry = zip.GetEntry("Contents/header.xml");
+                if (entry == null) throw new InvalidDataException("한글 문서 서식 정보를 찾지 못했습니다.");
+                var xml = new XmlDocument { XmlResolver = null };
+                using (var stream = entry.Open())
+                using (var reader = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null })) xml.Load(reader);
+                foreach (XmlElement style in xml.SelectNodes("//*[local-name()='charPr']")) {
+                    string height = style.GetAttribute("height");
+                    if (height != "1500" && height != "2000") style.SetAttribute("height", "1100");
+                }
+                foreach (XmlElement spacing in xml.SelectNodes("//*[local-name()='paraPr']//*[local-name()='lineSpacing']")) {
+                    spacing.SetAttribute("type", "PERCENT"); spacing.SetAttribute("value", "150");
+                }
+                entry.Delete();
+                entry = zip.CreateEntry("Contents/header.xml", CompressionLevel.Optimal);
+                using (var stream = entry.Open())
+                using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = new UTF8Encoding(false) })) xml.Save(writer);
+            }
+        }
+
+        private static void ApplyDocumentFormat(dynamic app, HeadingPayload[] headings)
+        {
+            app.HAction.Run("MoveDocBegin");
+            dynamic section = app.HParameterSet.HSecDef;
+            app.HAction.GetDefault("PageSetup", section.HSet);
+            section.PageDef.TopMargin = app.MiliToHwpUnit(15.0);
+            section.PageDef.BottomMargin = app.MiliToHwpUnit(15.0);
+            section.PageDef.LeftMargin = app.MiliToHwpUnit(20.0);
+            section.PageDef.RightMargin = app.MiliToHwpUnit(20.0);
+            section.PageDef.HeaderLen = app.MiliToHwpUnit(10.0);
+            section.PageDef.FooterLen = app.MiliToHwpUnit(10.0);
+            section.HSet.SetItem("ApplyClass", 24);
+            section.HSet.SetItem("ApplyTo", 3);
+            if (!(bool)app.HAction.Execute("PageSetup", section.HSet)) throw new InvalidOperationException("문서 여백 적용 실패");
+            app.HAction.Run("SelectAll");
+            dynamic chars = app.HParameterSet.HCharShape;
+            app.HAction.GetDefault("CharShape", chars.HSet);
+            chars.Height = 1100;
+            if (!(bool)app.HAction.Execute("CharShape", chars.HSet)) throw new InvalidOperationException("본문 글자 크기 적용 실패");
+            dynamic para = app.HParameterSet.HParaShape;
+            app.HAction.GetDefault("ParagraphShape", para.HSet);
+            para.LineSpacingType = 0;
+            para.LineSpacing = 150;
+            if (!(bool)app.HAction.Execute("ParagraphShape", para.HSet)) throw new InvalidOperationException("줄 간격 적용 실패");
+            app.HAction.Run("Cancel");
+            foreach (HeadingPayload heading in headings)
+            {
+                if (heading == null || !Regex.IsMatch(heading.marker ?? "", "^AICEHD[a-f0-9]{32}N[0-9]+END$") || (heading.fontSize != 20 && heading.fontSize != 15)) throw new InvalidDataException("제목 서식 데이터 오류");
+                app.HAction.Run("MoveDocBegin");
+                dynamic find = app.HParameterSet.HFindReplace;
+                app.HAction.GetDefault("RepeatFind", find.HSet);
+                find.FindString = heading.marker;
+                find.IgnoreMessage = 1;
+                find.Direction = app.FindDir("Forward");
+                find.FindType = 1;
+                if (!(bool)app.HAction.Execute("RepeatFind", find.HSet)) throw new InvalidOperationException("제목 위치를 찾지 못했습니다.");
+                app.HAction.Run("Delete");
+                app.HAction.Run("MoveParaBegin");
+                if (heading.blankBefore) app.HAction.Run("BreakPara");
+                app.HAction.Run("MoveSelParaEnd");
+                app.HAction.GetDefault("CharShape", chars.HSet);
+                chars.Height = (int)(heading.fontSize * 100);
+                if (!(bool)app.HAction.Execute("CharShape", chars.HSet)) throw new InvalidOperationException("제목 크기 적용 실패");
+                app.HAction.Run("Cancel");
+            }
+            app.HAction.Run("MoveDocBegin");
         }
 
         private static void InsertEquations(dynamic app, EquationPayload[] equations)

@@ -28,7 +28,7 @@
     padding: 0 !important;
     color: #17191f !important;
     background: #fff !important;
-    font: 10.8pt/1.62 system-ui, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+    font: 11pt/1.5 system-ui, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
     overflow: visible !important;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
@@ -46,11 +46,11 @@
     padding-bottom: 4mm;
     border-bottom: .35mm solid #d8dce5;
   }
-  #ai-chat-exporter-print-root .aice-document-header h1 { margin: 0 0 2mm; font-size: 19pt; line-height: 1.25; }
-  #ai-chat-exporter-print-root .aice-document-header p { margin: 0; color: #6a7080; font-size: 8.5pt; }
-  #ai-chat-exporter-print-root h1 { font-size: 17pt; }
-  #ai-chat-exporter-print-root h2 { font-size: 14.5pt; }
-  #ai-chat-exporter-print-root h3 { font-size: 12.5pt; }
+  #ai-chat-exporter-print-root .aice-document-header h1 { margin: 0 0 2mm; font-size: 20pt !important; line-height: 1.25; }
+  #ai-chat-exporter-print-root .aice-document-header p { margin: 0; color: #6a7080; font-size: 11pt; }
+  #ai-chat-exporter-print-root h1 { font-size: 15pt !important; }
+  #ai-chat-exporter-print-root h2 { font-size: 15pt !important; }
+  #ai-chat-exporter-print-root h3 { font-size: 15pt !important; }
   #ai-chat-exporter-print-root h1,
   #ai-chat-exporter-print-root h2,
   #ai-chat-exporter-print-root h3,
@@ -60,7 +60,7 @@
 
   #ai-chat-exporter-print-root .aice-message { margin: 0 0 7mm; }
   #ai-chat-exporter-print-root .aice-message-user { padding: 4mm 5mm; border-left: 1.2mm solid #8694c9; background: #f4f6fb; }
-  #ai-chat-exporter-print-root .aice-role-label { margin-bottom: 2mm; color: #667085; font-size: 8pt; font-weight: 700; letter-spacing: .04em; }
+  #ai-chat-exporter-print-root .aice-role-label { margin-bottom: 2mm; color: #667085; font-size: 11pt; font-weight: 700; letter-spacing: .04em; }
 
   #ai-chat-exporter-print-root pre {
     max-width: 100% !important;
@@ -71,7 +71,7 @@
     white-space: pre-wrap !important;
     overflow-wrap: anywhere !important;
     tab-size: 4;
-    font: 8.8pt/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace !important;
+    font: 11pt/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace !important;
   }
   #ai-chat-exporter-print-root code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace !important; }
 
@@ -79,7 +79,7 @@
     width: 100% !important;
     border-collapse: collapse !important;
     table-layout: auto;
-    font-size: 9.3pt;
+    font-size: 11pt;
   }
   #ai-chat-exporter-print-root th,
   #ai-chat-exporter-print-root td {
@@ -128,3 +128,5 @@
   #ai-chat-exporter-print-root table { break-inside: auto; }
   #ai-chat-exporter-print-root tr { break-inside: avoid; break-after: auto; }
 }
+
+@media print { #ai-chat-exporter-print-root h4,#ai-chat-exporter-print-root h5,#ai-chat-exporter-print-root h6{font-size:15pt!important} #ai-chat-exporter-print-root .aice-heading-gap{margin:0!important;padding:0!important;height:16.5pt!important;line-height:16.5pt!important;break-after:avoid} }

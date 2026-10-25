@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
+fs.mkdirSync('tmp/document-format',{recursive:true});
+const dom = new JSDOM('<body></body>',{runScripts:'outside-only',url:'https://chatgpt.com'});
+const w=dom.window;w.AIChatExporter={mathPreserver:{findMath:()=>[]}};
+w.eval(fs.readFileSync('chrome-extension/content/exporter/hwp-package.js','utf8'));
+const content=w.document.createElement('div');
+content.innerHTML='<h1>답변 제목</h1><p>본문 A 가나다 ABC 123</p><h2>중간제목 A</h2><p>본문 B</p><h3>중간제목 B</h3><p>본문 C</p><table><tr><th>표 제목</th><th>값</th></tr><tr><td>표 본문</td><td>42</td></tr></table>';
+const payload=await w.AIChatExporter.hwpPackage.create({content,title:'문서 전체 제목',siteLabel:'ChatGPT',settings:{includeTitle:true,includeDate:true},mathCount:0});
+assert.equal(payload.headings.length,4);assert.equal(payload.headings[0].fontSize,20);assert.equal(payload.headings[0].blankBefore,false);
+assert.ok(payload.headings.slice(1).every(h=>h.fontSize===15&&h.blankBefore));
+fs.writeFileSync('tmp/document-format/fixture.json',JSON.stringify({...payload,format:'HWPX'},null,2));
+console.log('PASS: document title 20pt; response headings 15pt with blank-line metadata; body 11pt/150% payload.');
+dom.window.close();

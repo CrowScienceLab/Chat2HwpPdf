@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const AICE = globalThis.AIChatExporter ||= {};
-  if (AICE.printEngine?.version === 4) return;
+  if (AICE.printEngine?.version === 6) return;
 
   const ROOT_ID = "ai-chat-exporter-print-root";
   const STYLE_ID = "ai-chat-exporter-print-style";
@@ -57,7 +57,7 @@
     }
     let css = sourceCss;
     const pageSize = settings.orientation === "landscape" ? "A4 landscape" : "A4 portrait";
-    const margins = settings.margin === "narrow" ? "9mm 10mm 11mm" : "15mm 17mm 18mm";
+    const margins = "15mm 20mm";
     css = css.replace("__AICE_PAGE_SIZE__", pageSize).replace("__AICE_PAGE_MARGIN__", margins);
     if (!settings.wrapCode) css += `\n#${ROOT_ID} pre { white-space: pre !important; overflow-wrap: normal !important; }`;
     return css;
@@ -100,7 +100,21 @@
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = prepareCss(printCss, settings);
+    for (const heading of content.querySelectorAll('h1,h2,h3,h4,h5,h6')) {
+      const gap = document.createElement('p');gap.className='aice-heading-gap';gap.textContent='\u00a0';
+      heading.before(gap);
+    }
     normalizeAppearance(content);
+    // Resolve exported resources before adoption. A <base> element in the
+    // about:blank print frame violates sites' inherited base-uri 'none' CSP.
+    // Local fragment references must stay local for SVG formulas and anchors.
+    for (const node of [content, ...content.querySelectorAll('[href],[src],[poster]')]) {
+      for (const attribute of ['href', 'src', 'poster']) {
+        const value = node.getAttribute(attribute);
+        if (!value || value.startsWith('#')) continue;
+        try { node.setAttribute(attribute, new URL(value, document.baseURI).href); } catch (_) { /* Preserve unresolvable attributes. */ }
+      }
+    }
     // Print a separate document. Host-page @media print rules and React's
     // handling of body children must never hide or restyle the print root.
     const frame = document.createElement('iframe');
@@ -112,9 +126,6 @@
     const printDocument = frame.contentDocument;
     const printWindow = frame.contentWindow;
     if (!printDocument || !printWindow) { cleanup(); throw new Error('인쇄 문서를 열지 못했습니다. 페이지를 새로고침해 주세요.'); }
-    const base = printDocument.createElement('base');
-    base.href = document.baseURI;
-    printDocument.head.append(base);
     printDocument.title = title || `${siteLabel} 내보내기`;
     printDocument.documentElement.lang = 'ko';
     printDocument.documentElement.classList.add('aice-printing');
@@ -159,5 +170,5 @@
     } catch (error) { finish(); cleanup(); throw error; }
   }
 
-  AICE.printEngine = { print, cleanup, version: 4 };
+  AICE.printEngine = { print, cleanup, version: 6 };
 })();

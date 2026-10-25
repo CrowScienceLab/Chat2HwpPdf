@@ -84,9 +84,11 @@ internal static class Setup
                     status.Top = toggle.Checked ? 391 : 169;
                     install.Top = toggle.Checked ? 437 : 207;
                 };
+                form.AcceptButton = install;
                 install.Click += (sender, e) => {
+                    if (Object.Equals(install.Tag, true)) { form.Close(); return; }
                     install.Enabled = false;
-                    try { Install(extension.Text.Trim(), output.Text.Trim(), module.Text.Trim()); status.Text = "설치 완료 · " + ReleaseInfo.Version + " · 확장 앱의 설치 안내 화면으로 돌아가세요."; }
+                    try { Install(extension.Text.Trim(), output.Text.Trim(), module.Text.Trim()); ShowInstalled(form, install, toggle, advanced); }
                     catch (Exception error) { MessageBox.Show(error.Message, "설치 실패"); }
                     finally { install.Enabled = true; }
                 };
@@ -102,6 +104,12 @@ internal static class Setup
                     toggle.Checked = true;
                     Application.DoEvents();
                     using (var bitmap = new Bitmap(form.Width, form.Height)) { form.DrawToBitmap(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height)); bitmap.Save(Path.Combine(directory, "installer-advanced.png")); }
+                    ShowInstalled(form, install, toggle, advanced);
+                    Application.DoEvents();
+                    using (var bitmap = new Bitmap(form.Width, form.Height)) { form.DrawToBitmap(bitmap, new Rectangle(0, 0, bitmap.Width, bitmap.Height)); bitmap.Save(Path.Combine(directory, "installer-success.png")); }
+                    if (install.Text != "닫기" || !Object.Equals(install.Tag, true)) throw new Exception("Success state not applied");
+                    install.PerformClick();
+                    if (!form.IsDisposed) throw new Exception("Close button did not close installer");
                     return 0;
                 }
                 Application.Run(form);
@@ -111,6 +119,16 @@ internal static class Setup
             if (args.Length > 0 && args[0] == "--preview-ui") { Console.Error.WriteLine(error); return 1; }
             MessageBox.Show(error.Message, "수식Chat"); return 1;
         }
+    }
+    static void ShowInstalled(Form form, Button install, CheckBox toggle, Panel advanced) {
+        toggle.Checked = false;
+        toggle.Enabled = false;
+        advanced.Enabled = false;
+        status.ForeColor = Color.FromArgb(30, 110, 60);
+        status.Text = "설치 완료 · " + ReleaseInfo.Version + "\n닫기를 누르고 확장 앱에서 도우미 연결을 확인하세요.";
+        install.Text = "닫기";
+        install.Tag = true;
+        form.CancelButton = install;
     }
     static Label AddLabel(Control form, string text, int x, int y, int w, int h) {
         var label = new Label { Text = text, Left = x, Top = y, Width = w, Height = h }; form.Controls.Add(label); return label;

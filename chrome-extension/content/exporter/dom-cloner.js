@@ -1,17 +1,18 @@
 (() => {
   "use strict";
   const AICE = globalThis.AIChatExporter ||= {};
-  if (AICE.domCloner?.version === 3) return;
+  if (AICE.domCloner?.version === 4) return;
 
-  function cloneNode(source, adapter) {
+  function cloneNode(source, adapter, settings = {}) {
     const clone = source.cloneNode(true);
-    AICE.imageHandler.copyCanvas(source, clone);
+    if (AICE.imageHandler.copyMedia) AICE.imageHandler.copyMedia(source, clone, settings);
+    else AICE.imageHandler.copyCanvas(source, clone);
     const mathCount = AICE.mathPreserver.preserve(source, clone);
     AICE.contentCleaner.clean(clone, adapter);
     return { clone, mathCount };
   }
 
-  function cloneSelection(adapter) {
+  function cloneSelection(adapter, settings = {}) {
     const selection = getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) throw new Error("내보낼 영역을 먼저 마우스로 선택해 주세요.");
     const range = selection.getRangeAt(0).cloneRange();
@@ -24,6 +25,7 @@
     const fragment = range.cloneContents();
     const wrapper = document.createElement("div");
     wrapper.append(fragment);
+    AICE.imageHandler.copySelection?.(range, wrapper, settings);
     const selectedMath = formulas.filter(node => range.intersectsNode(node));
     const clonedMath = AICE.mathPreserver.findMath(wrapper);
     selectedMath.forEach((source, index) => {
@@ -33,5 +35,5 @@
     return { clone: wrapper, mathCount: AICE.mathPreserver.findMath(wrapper).length };
   }
 
-  AICE.domCloner = { cloneNode, cloneSelection, version: 3 };
+  AICE.domCloner = { cloneNode, cloneSelection, version: 4 };
 })();

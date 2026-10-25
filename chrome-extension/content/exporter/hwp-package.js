@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const AICE = globalThis.AIChatExporter ||= {};
-  if (AICE.hwpPackage?.version === 7) return;
+  if (AICE.hwpPackage?.version === 9) return;
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) => ({
@@ -53,7 +53,7 @@
   }
 
   async function inlineImages(root) {
-    const images = [...root.querySelectorAll("img")].filter((image) => !image.src.startsWith("data:"));
+    const images = [...root.querySelectorAll("img")].filter((image) => !/^data:image\/(?:png|jpe?g);base64,/i.test(image.src));
     let omitted = 0;
     for (const image of images) {
       try {
@@ -98,8 +98,10 @@
   async function create({ content, title, siteLabel, settings, mathCount }) {
     const root = document.createElement("div");
     root.className = "aice-hwp-document";
+    let documentTitle;
     if (settings.includeTitle) {
       const heading = document.createElement("h1");
+      documentTitle = heading;
       heading.textContent = title || `${siteLabel} 내보내기`;
       root.append(heading);
     }
@@ -113,24 +115,33 @@
     document.body.append(root);
     root.style.cssText = "position:fixed;left:-100000px;top:0;width:176mm;background:white;color:black;";
     try {
+      AICE.imageHandler?.preserveContainers?.(root);
       const { equations, omittedEquations } = replaceMathWithEquations(root, settings.mathSource);
+      if (settings.includeImages === false) root.querySelectorAll("img,svg,canvas,iframe").forEach(n => n.remove());
       const omittedImages = await inlineImages(root);
       normalizeHtml(root);
       root.removeAttribute('style');
+      const headingBatch = crypto.randomUUID().replaceAll('-', '');
+      const headings = [...root.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((node,index) => {
+        const marker = 'AICEHD' + headingBatch + 'N' + index + 'END';
+        node.prepend(document.createTextNode(marker));
+        return {marker, fontSize:node === documentTitle ? 20 : 15, blankBefore:node !== documentTitle};
+      });
       return {
         schemaVersion: 2,
         equations,
+        headings,
         title: title || `${siteLabel} 내보내기`,
         source: siteLabel,
         createdAt: new Date().toISOString(),
         privacy: "local-only",
         diagnostics: { sourceMathCount: mathCount, equationCount: equations.length, omittedEquations, omittedImages, warnings: [...new Set(equations.flatMap(eq => eq.warnings))] },
-        html: `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>body{font-family:'함초롬바탕','Malgun Gothic',sans-serif;line-height:1.65;color:#111}h1,h2,h3{font-family:'함초롬돋움','Malgun Gothic',sans-serif}table{border-collapse:collapse;width:100%}th,td{border:1px solid #777;padding:5px}pre,code{font-family:Consolas,'D2Coding',monospace;white-space:pre-wrap}.aice-message{margin:0 0 14pt;padding:8pt;border-left:3pt solid #bbb}.aice-message-user{background:#f4f7fb;border-color:#6d8fbe}.aice-role-label{font-weight:700;margin-bottom:4pt}.aice-hwp-math.inline{display:inline;vertical-align:middle}.aice-hwp-math.display{display:block;max-width:100%;height:auto;margin:8pt auto}img{max-width:100%;height:auto}blockquote{border-left:3px solid #aaa;margin-left:0;padding-left:12px;color:#444}a{color:#1659a7;text-decoration:underline}.aice-metadata{color:#666;font-size:9pt}</style></head><body>${root.innerHTML}</body></html>`
+        html: `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>body{font-family:'함초롬바탕','Malgun Gothic',sans-serif;font-size:11pt;line-height:150%;color:#111}h1{font-size:20pt}h2,h3,h4,h5,h6{font-size:15pt}h1,h2,h3{font-family:'함초롬돋움','Malgun Gothic',sans-serif}table{border-collapse:collapse;width:100%}th,td{border:1px solid #777;padding:5px}pre,code{font-family:Consolas,'D2Coding',monospace;white-space:pre-wrap}.aice-message{margin:0 0 14pt;padding:8pt;border-left:3pt solid #bbb}.aice-message-user{background:#f4f7fb;border-color:#6d8fbe}.aice-role-label{font-weight:700;margin-bottom:4pt}.aice-hwp-math.inline{display:inline;vertical-align:middle}.aice-hwp-math.display{display:block;max-width:100%;height:auto;margin:8pt auto}img{max-width:100%;height:auto}blockquote{border-left:3px solid #aaa;margin-left:0;padding-left:12px;color:#444}a{color:#1659a7;text-decoration:underline}.aice-metadata{color:#666;font-size:9pt}</style></head><body>${root.innerHTML}</body></html>`
       };
     } finally {
       root.remove();
     }
   }
 
-  AICE.hwpPackage = { create, version: 7 };
+  AICE.hwpPackage = { create, version: 9 };
 })();

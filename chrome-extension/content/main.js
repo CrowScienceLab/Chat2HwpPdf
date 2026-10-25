@@ -1,8 +1,8 @@
 (() => {
   "use strict";
   const AICE = globalThis.AIChatExporter ||= {};
-  if (AICE.mainInitialized) return;
-  AICE.mainInitialized = true;
+  if (AICE.mainVersion === 2) return;
+  AICE.mainVersion = 2;
   AICE.debug = false;
 
   function getAdapter() {
@@ -22,20 +22,28 @@
     container.append(article);
   }
 
-  function buildContent(mode, adapter, settings) {
+  async function buildContent(mode, adapter, settings) {
     let mathCount = 0;
-    if (mode === "selection") return AICE.domCloner.cloneSelection(adapter);
+    if (mode === "selection") {
+      const selection = getSelection();
+      if (!selection?.rangeCount || selection.isCollapsed) throw new Error("내보낼 영역을 먼저 선택하세요.");
+      const range = selection.getRangeAt(0);
+      await AICE.imageHandler.prepareSelection(range, settings);
+      return AICE.domCloner.cloneSelection(adapter, settings);
+    }
 
     if (mode === "note") {
       const source = adapter.getCurrentNote();
       if (!source) throw new Error("현재 열린 메모를 찾지 못했습니다. 메모를 연 뒤 다시 시도해 주세요.");
-      return AICE.domCloner.cloneNode(source, adapter);
+      await AICE.imageHandler.prepare(source, settings);
+      return AICE.domCloner.cloneNode(source, adapter, settings);
     }
 
     if (mode === "current") {
       const source = adapter.getLatestAssistantMessage();
       if (!source) throw new Error(adapter.id === 'generic' ? "답변 구조를 인식하지 못했습니다. 본문을 드래그한 뒤 선택 영역을 사용하세요." : "현재 답변을 찾지 못했습니다. 페이지가 완전히 로드된 후 다시 시도해 주세요.");
-      return AICE.domCloner.cloneNode(source, adapter);
+      await AICE.imageHandler.prepare(source, settings);
+      return AICE.domCloner.cloneNode(source, adapter, settings);
     }
 
     if (mode === "conversation") {
@@ -43,22 +51,27 @@
       if (!messages.length) throw new Error("대화 구조를 인식하지 못했습니다. 본문을 드래그한 뒤 선택 영역을 사용하세요.");
       const container = document.createElement("section");
       container.className = "aice-conversation";
-      messages.forEach(({ node, role }) => {
-        const result = AICE.domCloner.cloneNode(node, adapter);
+      for (const { node, role } of messages) {
+        await AICE.imageHandler.prepare(node, settings);
+        const result = AICE.domCloner.cloneNode(node, adapter, settings);
         mathCount += result.mathCount;
         appendMessage(container, result.clone, role);
-      });
+      }
       return { clone: container, mathCount };
     }
     throw new Error("지원하지 않는 내보내기 모드입니다.");
   }
 
+  let exportBusy = false;
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message?.type !== "AI_CHAT_EXPORTER_EXPORT") return;
+    if (!["AI_CHAT_EXPORTER_EXPORT_V2", "AI_CHAT_EXPORTER_EXPORT"].includes(message?.type)) return;
+    if (exportBusy) { sendResponse({ok:false,error:"이미 내보내는 중입니다."}); return; }
+    exportBusy = true;
     (async () => {
       try {
         const adapter = getAdapter();
-        const result = buildContent(message.mode, adapter, message.settings);
+        AICE.imageHandler.begin({ exportId: message.exportId });
+        const result = await buildContent(message.mode, adapter, message.settings || {});
         if (AICE.debug) {
           console.info("[AI Chat Exporter] adapter:", adapter.id);
           console.info("[AI Chat Exporter] messages:", adapter.getMessages().length);
@@ -71,6 +84,7 @@
             settings: message.settings,
             mathCount: result.mathCount
           });
+          documentPackage.diagnostics.media = AICE.imageHandler.getDiagnostics();
           sendResponse({ ok: true, package: documentPackage });
           return;
         }
@@ -82,11 +96,11 @@
           mathCount: result.mathCount,
           printCss: message.printCss
         });
-        sendResponse({ ok: true });
+        sendResponse({ ok: true, media: AICE.imageHandler.getDiagnostics() });
       } catch (error) {
         if (AICE.debug) console.error("[AI Chat Exporter]", error);
         sendResponse({ ok: false, error: error?.message || String(error) });
-      }
+      } finally { exportBusy = false; }
     })();
     return true;
   });

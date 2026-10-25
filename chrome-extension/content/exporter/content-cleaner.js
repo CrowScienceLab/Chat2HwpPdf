@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const AICE = globalThis.AIChatExporter ||= {};
-  if (AICE.contentCleaner?.version === 2) return;
+  if (AICE.contentCleaner?.version === 3) return;
 
   const COMMON_UI = [
     "script", "style", "link", "template", "noscript", "iframe", "video", "audio",
@@ -12,6 +12,7 @@
   ].join(",");
 
   function clean(clone, adapter) {
+    AICE.imageHandler?.preserveContainers?.(clone);
     clone.querySelectorAll(COMMON_UI).forEach((node) => node.remove());
     adapter.cleanNode(clone);
     const elements = [clone, ...clone.querySelectorAll('*')];
@@ -51,5 +52,5 @@
     return clone;
   }
 
-  AICE.contentCleaner = { clean, version: 2 };
+  AICE.contentCleaner = { clean, version: 3 };
 })();

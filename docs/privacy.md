@@ -1,19 +1,21 @@
 # 개인정보처리방침 / Privacy Policy
 
-수식Chat to HWPX/PDF · Crow Science Lab. · 0.4.5
+수식Chat to HWPX/PDF · Crow Science Lab. · 0.7.0
 
-시행일 / Effective date: 2026-09-26
+시행일 / Effective date: 2026-10-25
 
 사용자가 선택한 대화를 로컬에서 내보냅니다. 자체 서버로 대화·파일·개인정보를 전송하지 않으며 분석·광고·추적 코드를 포함하지 않습니다.
 
 ## 권한
 
-- activeTab: 현재 탭의 대화 읽기
+- activeTab: 내보내는 현재 탭의 대화 읽기 및 그림 영역 확보를 위한 일시적 화면 캡처
 - scripting: 지원 사이트의 대화 추출
 - storage: 출력 설정과 마지막 작업 상태 저장
 - nativeMessaging (선택): Windows 도우미와 로컬 통신
 
 전체 사이트 접근·방문 기록·다운로드 목록 권한은 요청하지 않습니다.
+
+그림 포함이 켜져 있으면 외부 그림·대화형 시각화를 보존하기 위해 현재 탭을 일시적으로 스크롤하고 화면을 캡처할 수 있습니다. 그림 영역을 잘라 문서에 넣으며, 화면 전체 캡처를 확장 저장소에 보관하거나 외부 서버로 전송하지 않습니다. 처리 후 스크롤 위치를 복원합니다.
 
 ## 저장 정보
 
@@ -39,6 +41,8 @@ Formula Chat to HWPX/PDF processes only the AI conversation content that the use
 - `nativeMessaging` (optional): communicates locally with the Windows helper when the user creates an HWPX file or checks the helper connection.
 
 The extension does not request access to browsing history, downloads, or all websites. It does not use remote executable code.
+
+When images are included, the extension may temporarily scroll and capture the active tab to preserve external images or interactive figures. Only the figure crop is embedded in the exported document. Full-tab captures are not saved in extension storage or transmitted to an external server. Scroll positions are restored after processing.
 
 ### Stored information
 

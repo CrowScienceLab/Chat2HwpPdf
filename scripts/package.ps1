@@ -2,9 +2,22 @@
 param()
 $ErrorActionPreference = 'Stop'
 [void][Reflection.Assembly]::LoadWithPartialName('System.IO.Compression.FileSystem')
+[void][Reflection.Assembly]::LoadWithPartialName('System.IO.Compression')
 function Get-ArtifactHash([string]$filePath) {
   $algorithm = [Security.Cryptography.SHA256]::Create(); $stream = [IO.File]::OpenRead($filePath)
   try { return [BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace('-','') } finally { $stream.Dispose(); $algorithm.Dispose() }
+}
+function New-PortableZip([string]$directory, [string]$destination) {
+  # .NET Framework can store Windows backslashes in ZIP entry names.
+  # Extension paths and archives must use forward slashes on every platform.
+  $root = (Resolve-Path -LiteralPath $directory).Path.TrimEnd('\') + '\'
+  $zip = [IO.Compression.ZipFile]::Open($destination, [IO.Compression.ZipArchiveMode]::Create)
+  try {
+    Get-ChildItem -LiteralPath $directory -Recurse -File | ForEach-Object {
+      $entryName = $_.FullName.Substring($root.Length).Replace('\','/')
+      [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $entryName, [IO.Compression.CompressionLevel]::Optimal)
+    }
+  } finally { $zip.Dispose() }
 }
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -31,18 +44,18 @@ $source = Join-Path $stage 'source'
 New-Item -ItemType Directory -Force -Path $extension,$source | Out-Null
 Copy-Item -Path (Join-Path $extensionRoot '*') -Destination $extension -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $extension
-[IO.Compression.ZipFile]::CreateFromDirectory($extension, (Join-Path $dist "Chat2HwpPdf-Chrome-$version.zip"))
+New-PortableZip $extension (Join-Path $dist "Chat2HwpPdf-Chrome-$version.zip")
 foreach ($relative in @('chrome-extension','branding','scripts','tests','docs','release.json','package.json','package-lock.json','README.md','HANDOFF.md','THIRD_PARTY_NOTICES.md','.gitignore')) { Copy-Item -LiteralPath (Join-Path $projectRoot $relative) -Destination $source -Recurse }
 New-Item -ItemType Directory -Force -Path (Join-Path $source 'windows-helper\security') | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'windows-helper\src') -Destination (Join-Path $source 'windows-helper') -Recurse
 Get-ChildItem -LiteralPath (Join-Path $projectRoot 'windows-helper') -File | Where-Object { $_.Extension -eq '.ps1' -or $_.Name -eq 'README.md' } | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $source 'windows-helper') }
 foreach ($relative in @('README.md','official-automation.zip')) { Copy-Item -LiteralPath (Join-Path $projectRoot "windows-helper\security\$relative") -Destination (Join-Path $source 'windows-helper\security') }
-[IO.Compression.ZipFile]::CreateFromDirectory($source, (Join-Path $dist "Chat2HwpPdf-Source-$version.zip"))
+New-PortableZip $source (Join-Path $dist "Chat2HwpPdf-Source-$version.zip")
 Copy-Item -LiteralPath $setup -Destination $dist
 Copy-Item -LiteralPath (Join-Path $projectRoot 'chrome-extension\icons\icon-128.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Icon-128.png')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'branding\app-large.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Large-512.png')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'branding\store-promo.png') -Destination (Join-Path $dist 'Chat2HwpPdf-Store-440x280.png')
-Copy-Item -LiteralPath (Join-Path $projectRoot 'docs\release-0.4.8.md') -Destination $dist
+Copy-Item -LiteralPath (Join-Path $projectRoot "docs\release-$version.md") -Destination $dist
 $hashes = Get-ChildItem -LiteralPath $dist -File | Sort-Object Name | ForEach-Object { '{0}  {1}' -f (Get-ArtifactHash $_.FullName).ToLowerInvariant(), $_.Name }
 [IO.File]::WriteAllLines((Join-Path $dist 'SHA256SUMS.txt'), $hashes, (New-Object Text.UTF8Encoding($false)))
 $resolvedStage = (Resolve-Path -LiteralPath $stage).Path

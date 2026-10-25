@@ -13,6 +13,7 @@ function render(size, compact = size < 128) {
   return new Resvg(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">${drawing}</svg>`).render().asPng();
 }
 for (const size of [16, 32, 48, 64, 128]) fs.writeFileSync(path.join(iconRoot, `icon-${size}.png`), render(size));
+fs.writeFileSync(path.join(iconRoot, 'crow-256.png'), render(256, true));
 fs.writeFileSync(path.join(root, 'branding/app-large.png'), render(512, false));
 fs.writeFileSync(path.join(root, 'branding/store-promo.png'), new Resvg(`<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280"><rect width="440" height="280" fill="white"/><image x="80" y="0" width="280" height="280" href="${master}"/></svg>`).render().asPng());
 fs.copyFileSync(path.join(root, 'branding/app-large.png'), path.join(root, 'docs/assets/app-large.png'));

@@ -29,6 +29,7 @@
       '.note-editor', '.single-note-container'
     ],
     noteTitle: [
+      'artifact-viewer input[aria-label="아티팩트 제목"]',
       'note-editor input[aria-label="노트 제목 수정 가능"]',
       'note-editor input.note-header__editable-title',
       '[role="dialog"] input',
@@ -54,6 +55,8 @@
       return [...nodes].reverse().find(isVisible) || nodes.at(-1) || null;
     }
     getCurrentNote() {
+      const artifact = [...document.querySelectorAll('artifact-viewer .artifact-content')].find(node => isVisible(node) && !node.querySelector('slide-deck-viewer'));
+      if (artifact && (safeText(artifact) || artifact.querySelector('img,svg,canvas,iframe'))) return artifact;
       const candidates = queryAll(document, SELECTORS.note).filter((node) => isVisible(node) && safeText(node));
       return candidates.sort((a, b) => safeText(b).length - safeText(a).length)[0] || null;
     }
