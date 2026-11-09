@@ -1,10 +1,10 @@
 {
   "name": "crow-chat2hwp-pdf",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": true,
   "description": "수식Chat to HWPX/PDF — Crow Science Lab.",
   "scripts": {
-    "test": "node tests/validate.mjs && node tests/hwp-equations.mjs && node tests/background-export.mjs && node tests/site-compatibility.mjs && node tests/export-lifecycle.mjs && node tests/onboarding.mjs && node tests/media-capture-background.mjs",
+    "test": "node tests/validate.mjs && node tests/hwp-equations.mjs && node tests/background-export.mjs && node tests/site-compatibility.mjs && node tests/chatgpt-layout-regression.mjs && node tests/export-lifecycle.mjs && node tests/onboarding.mjs && node tests/media-capture-background.mjs",
     "test:print": "node tests/print-csp.mjs && node tests/print-regression.mjs",
     "vendor": "node scripts/vendor.mjs",
     "version:sync": "node scripts/sync-version.mjs",

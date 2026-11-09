@@ -3,7 +3,7 @@
 작업 기준: `D:\App coding\AI_Chat2Hwpx_Pdf`
 저장소: https://github.com/CrowScienceLab/Chat2HwpPdf
 웹스토어 ID: `njcnchmapljncehmmfplijnlfgloiibb`
-현재 버전: 확장·도우미·설치 프로그램 모두 `0.7.0`.
+현재 버전: 확장·도우미·설치 프로그램 모두 `0.7.1`.
 
 이전 `AI-Chat-Exporter` 디렉터리를 위 경로로 옮겼습니다. `.git`와 사용자 작업을 보존했으며 별도 병렬 프로젝트를 만들지 않았습니다. 개발 영역은 `chrome-extension`과 `windows-helper`로 구분합니다. 압축해제 로드 대상은 프로젝트 전체가 아닌 `chrome-extension`입니다. 경로 변경으로 개발용 확장 ID가 달라질 수 있으므로 도우미의 고급 설정에서 확인하세요. 웹스토어 ID는 그대로입니다.
 

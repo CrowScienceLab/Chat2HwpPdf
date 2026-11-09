@@ -1,6 +1,6 @@
 # 개인정보처리방침 / Privacy Policy
 
-수식Chat to HWPX/PDF · Crow Science Lab. · 0.7.0
+수식Chat to HWPX/PDF · Crow Science Lab. · 0.7.1
 
 시행일 / Effective date: 2026-10-25
 

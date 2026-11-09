@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const AICE = globalThis.AIChatExporter ||= {};
-  if (AICE.adapters?.chatgpt) return;
+  if (AICE.adapters?.chatgpt?.version === 2) return;
   AICE.adapters ||= {};
   const { queryAll, first, isVisible, uniqueTopLevel, nearestScrollableTextContainer } = AICE.domUtils;
 
@@ -29,7 +29,13 @@
   };
 
   function headingRole(heading) {
-    const text = heading?.textContent?.replace(/\s+/g, " ").trim() || "";
+    // Current ChatGPT uses a stable role attribute on the accessible heading.
+    // Its textContent also contains hidden print-only names (e.g. 답변:ChatGPT).
+    const role = heading?.getAttribute('data-conversation-role');
+    if (role === 'assistant' || role === 'user') return role;
+    const copy = heading?.cloneNode(true);
+    copy?.querySelectorAll('[aria-hidden="true"],[hidden]').forEach(node => node.remove());
+    const text = copy?.textContent?.replace(/\s+/g, " ").trim() || "";
     if (ROLE_HEADING_PATTERNS.assistant.test(text)) return "assistant";
     if (ROLE_HEADING_PATTERNS.user.test(text)) return "user";
     return null;
@@ -46,8 +52,19 @@
     return current;
   }
 
+  function isMessageAvailable(node) {
+    for (let current = node; current && current !== document.body; current = current.parentElement) {
+      if (current.hidden || current.getAttribute('aria-hidden') === 'true') return false;
+      // Do not use computed visibility here: Chrome print media may hide the
+      // source page while an export frame is retained. Those messages still
+      // belong to a subsequent conversation export.
+      if (current.style.display === 'none' || current.classList.contains('hidden')) return false;
+    }
+    return true;
+  }
+
   class ChatGPTAdapter extends AICE.SiteAdapter {
-    constructor() { super("chatgpt", "ChatGPT", SELECTORS); }
+    constructor() { super("chatgpt", "ChatGPT", SELECTORS); this.version = 2; }
     detect() { return location.hostname === "chatgpt.com"; }
 
     normalizeMessage(node, role) {
@@ -61,7 +78,7 @@
       const semanticNodes = queryAll(document, ["main h4", "h4.sr-only", "h4"])
         .filter((heading) => headingRole(heading) === role)
         .map(messageContainerFromHeading);
-      return uniqueTopLevel([...explicitNodes, ...semanticNodes].filter(Boolean));
+      return uniqueTopLevel([...explicitNodes, ...semanticNodes].filter(node => node && isMessageAvailable(node)));
     }
 
     getMessages() {
@@ -95,6 +112,9 @@
 
     cleanNode(node) {
       queryAll(node, SELECTORS.controls).forEach((control) => control.remove());
+      // The export already provides its own question/answer label. Site role
+      // headings are accessibility metadata, not 15pt document subheadings.
+      node.querySelectorAll('h4').forEach(heading => { if (headingRole(heading)) heading.remove(); });
     }
   }
 
